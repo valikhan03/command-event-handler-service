@@ -1,0 +1,5 @@
+{
+    "addr":["localhost:9092"],
+    "group_id":"default",
+    "topics":[""]
+}
