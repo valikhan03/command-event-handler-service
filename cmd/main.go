@@ -6,6 +6,7 @@ import (
 	"command-event-handler-service/models"
 	"command-event-handler-service/services"
 	"context"
+	"log"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 		for {
 			err := consumerGroup.Consume(context.Background(), models.KafkaConf.Topics, consumerHandler)
 			if err != nil {
-
+				log.Fatal("Kafka Consumer error^")
 			}
 		}
 	}()

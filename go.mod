@@ -11,6 +11,7 @@ require (
 	github.com/elastic/elastic-transport-go/v8 v8.1.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.4.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -22,6 +23,7 @@ require (
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	github.com/valikhan03/tool v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
 )
