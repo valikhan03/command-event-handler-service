@@ -1,16 +1,15 @@
 package services
 
 import (
-	"command-event-handler-service/models"
 	"reflect"
 	"github.com/valikhan03/tool"
 )
 
 type EventHandler struct {
-	eventHandlerChan <-chan *models.Event
+	eventHandlerChan <-chan *Event
 }
 
-func InitEventHandler(eventsChan chan *models.Event) *EventHandler {
+func InitEventHandler(eventsChan chan *Event) *EventHandler {
 	return &EventHandler{
 		eventHandlerChan: eventsChan,
 	}
@@ -21,6 +20,7 @@ func (e *EventHandler) HandleCommandEvents() {
 	for {
 		eventObj := <-e.eventHandlerChan
 		method := tool.EventFuncs[eventObj.Command]
-		reflect.ValueOf(Event(*eventObj)).MethodByName(method)
+		reflect.ValueOf(eventObj).MethodByName(method).Call([]reflect.Value{})
 	}
 }
+

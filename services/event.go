@@ -3,24 +3,28 @@ package services
 import (
 	"bytes"
 	"command-event-handler-service/elastic"
-	"command-event-handler-service/models"
 	"context"
 	"encoding/json"
 	"log"
+	"strconv"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/valikhan03/tool"
 )
 
-type Event models.Event
+type Event struct {
+	Command string                 `json:"command"`
+	Entity  map[string]interface{} `json:"entity"`
+}
 
 func (e *Event) CreateAuction() {
-	data, err := json.Marshal(e)
+	data, err := json.Marshal(e.Entity)
 	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
+		log.Printf("Event parse error: %s\n", err.Error())
 	}
 
 	req := esapi.CreateRequest{
-		Index:      "auctions",
+		Index:      tool.AuctionsIDX,
 		DocumentID: e.Entity["id"].(string),
 
 		Body: bytes.NewReader(data),
@@ -28,22 +32,22 @@ func (e *Event) CreateAuction() {
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) UpdateAuction() {
-	data, err := json.Marshal(e)
+	data, err := json.Marshal(e.Entity)
 	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
+		log.Printf("Event parse error: %s\n", err.Error())
 	}
 
 	req := esapi.UpdateRequest{
-		Index:      "auctions",
+		Index:      tool.AuctionsIDX,
 		DocumentID: e.Entity["id"].(string),
 
 		Body: bytes.NewReader(data),
@@ -51,40 +55,34 @@ func (e *Event) UpdateAuction() {
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) DeleteAuction() {
-	data, err := json.Marshal(e)
-	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
-	}
-
-	req := esapi.UpdateRequest{
-		Index:      "auctions",
+	req := esapi.DeleteRequest{
+		Index:      tool.AuctionsIDX,
 		DocumentID: e.Entity["id"].(string),
-		Body:       bytes.NewReader(data),
 	}
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) AddParticipant() {
-	data, err := json.Marshal(e)
+	data, err := json.Marshal(e.Entity)
 	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
+		log.Printf("Event parse error: %s\n", err.Error())
 	}
 
 	req := esapi.CreateRequest{
@@ -96,11 +94,11 @@ func (e *Event) AddParticipant() {
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
@@ -112,45 +110,45 @@ func (e *Event) DeleteParticipant() {
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) AddLot() {
-	data, err := json.Marshal(e)
+	data, err := json.Marshal(e.Entity)
 	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
+		log.Printf("Event parse error: %s\n", err.Error())
 	}
-
+	id := strconv.Itoa(int(e.Entity["id"].(float64)))
 	req := esapi.CreateRequest{
-		Index:      "auction-products",
-		DocumentID: e.Entity["id"].(string),
+		Index:      tool.LotsIDX,
+		DocumentID: id,
 
 		Body: bytes.NewReader(data),
 	}
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) UpdateLot() {
-	data, err := json.Marshal(e)
+	data, err := json.Marshal(e.Entity)
 	if err != nil {
-		log.Printf("Event parse error: %x\n", err)
+		log.Printf("Event parse error: %s\n", err.Error())
 	}
 
 	req := esapi.UpdateRequest{
-		Index:      "auction-products",
+		Index:      tool.LotsIDX,
 		DocumentID: e.Entity["id"].(string),
 
 		Body: bytes.NewReader(data),
@@ -158,26 +156,26 @@ func (e *Event) UpdateLot() {
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }
 
 func (e *Event) DeleteLot() {
 	req := esapi.DeleteRequest{
-		Index:      "auction-products",
+		Index:      tool.LotsIDX,
 		DocumentID: e.Entity["id"].(string),
 	}
 
 	res, err := req.Do(context.Background(), elastic.ElasticConn)
 	if err != nil {
-		log.Printf("Elasticsearch request error: %x\n", err)
+		log.Printf("Elasticsearch request error: %s\n", err.Error())
 	}
 
 	if res.IsError() {
-		log.Printf("Elasticsearch request error: %x\n", res.String())
+		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
 }

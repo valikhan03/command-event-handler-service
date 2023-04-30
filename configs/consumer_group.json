@@ -1,5 +1,5 @@
 {
     "addr":["localhost:9092"],
-    "group_id":"default",
-    "topics":[""]
+    "group_id":"event-handler",
+    "topics":["commands-1"]
 }

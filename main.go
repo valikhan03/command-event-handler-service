@@ -10,25 +10,24 @@ import (
 )
 
 func main() {
+	models.InitElasticConfigs()
 	elastic.InitElasticConn()
 
-	eventsChan := make(chan *models.Event)
-
+	eventsChan := make(chan *services.Event)
+	
+	models.InitKafkaConfigs()
 	consumerGroup := kafka.InitConsumerGroup()
 	consumerHandler := kafka.InitConsumerHandler(eventsChan)
 
 	eventHandler := services.InitEventHandler(eventsChan)
 
-	go func() {
-		for {
-			err := consumerGroup.Consume(context.Background(), models.KafkaConf.Topics, consumerHandler)
-			if err != nil {
-				log.Fatal("Kafka Consumer error^")
-			}
-		}
-	}()
+	go 	eventHandler.HandleCommandEvents()
+	log.Println("command-handler started...")
 
-	go func() {
-		eventHandler.HandleCommandEvents()
-	}()
+	for {
+		err := consumerGroup.Consume(context.Background(), models.KafkaConf.Topics, consumerHandler)
+		if err != nil {
+			log.Fatalf("Kafka Consumer error: %s", err.Error())
+		}
+	}
 }
