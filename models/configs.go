@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"io/ioutil"
+	"log"
+
+	"gopkg.in/yaml.v3"
 )
 
 type KafkaConfig struct {
@@ -52,4 +56,47 @@ func InitElasticConfigs() {
 	}
 
 	ElasticConf = config
+}
+
+
+
+
+
+
+
+
+var DBConfs	DBConfigs
+
+
+
+type DBConfigs struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"-"`
+	DBName   string `yaml:"dbname"`
+	SSLMode  string `yaml:"sslmode"`
+}
+
+
+
+
+func InitDBConfigs() {
+	dbConfFile, err := ioutil.ReadFile("configs/db.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = yaml.Unmarshal(dbConfFile, &DBConfs)
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	DBConfs.Password = os.Getenv("DB_PASSWORD")
+}
+
+
+type ServerConfigs struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }

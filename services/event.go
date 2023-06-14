@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"command-event-handler-service/elastic"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"strconv"
+
+	database "command-event-handler-service/db"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/valikhan03/tool"
@@ -80,14 +83,23 @@ func (e *Event) DeleteAuction() {
 }
 
 func (e *Event) AddParticipant() {
+	var attempt_reqs tool.AttemptRequirements
 	data, err := json.Marshal(e.Entity)
 	if err != nil {
 		log.Printf("Event parse error: %s\n", err.Error())
 	}
+	query := `select id, auction_id, approve_required, enter_fee_required, enter_fee_amount 
+			  from tb_attempt_requirements where auction_id=$1`
+	database.DBConn.Get(&attempt_reqs, query, e.Entity["auction_id"].(string))
 
+	if attempt_reqs.EnterFee > 0 {
+		query := `select id, auction_id, approve_required, enter_fee_required, enter_fee_amount 
+			  from tb_attempt_requirements where auction_id=$1`
+		database.DBConn.Get(&attempt_reqs, query, e.Entity["auction_id"].(string))
+	}
 	req := esapi.CreateRequest{
 		Index:      "auction-participants",
-		DocumentID: e.Entity["id"].(string),
+		DocumentID: e.Entity["auction_id"].(string),
 
 		Body: bytes.NewReader(data),
 	}
@@ -178,4 +190,24 @@ func (e *Event) DeleteLot() {
 	if res.IsError() {
 		log.Printf("Elasticsearch request error: %s\n", res.String())
 	}
+}
+
+func (e *Event) CreateInvoice() {
+	product_name := getProductName(e.Entity["product_type"].(int), e.Entity["product_id"].(int))
+
+	tx, err := database.DBConn.BeginTxx(context.TODO(), &sql.TxOptions{})
+	if err != nil {
+		log.Printf("DB error: %v\n", err)
+		return
+	}
+	query := `insert into tb_invoices
+			  (user_id, product_type, product_id, product_name, amount, currency, p_date_insert)
+			  values ($1, $2, $3, $4, $5, $6, $7)`
+	_, err = tx.Exec(query, e.Entity["user_id"].(int), e.Entity["product_type"].(int), e.Entity["product_id"].(int), product_name, e.Entity["price"].(int))
+	if err != nil {
+		log.Printf("DB error: %v", err)
+		tx.Rollback()
+	}
+
+	tx.Commit()
 }
